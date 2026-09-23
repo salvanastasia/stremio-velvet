@@ -1,0 +1,13 @@
+{
+  "name": "velvet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Addon Stremio con film open in MP4, riproducibili nel browser.",
+  "main": "addon.js",
+  "scripts": {
+    "start": "node addon.js"
+  },
+  "dependencies": {
+    "stremio-addon-sdk": "1.6.10"
+  }
+}
