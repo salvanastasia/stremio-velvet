@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.4
-@description Nero, secondary-accent #1D1D1D su CTA/toggle.
+@version 2.7.5
+@description Nero, secondary #1D1D1D, toggle pill, chip active/hover.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description secondary-accent #1D1D1D; CTA/toggle senza override teal/gradient.
- * @version 2.7.4
+ * @description Toggle pill corretto; chip active=button, hover=solo testo.
+ * @version 2.7.5
  * @author Velvet
  */
 
@@ -152,18 +152,23 @@ html body {
 
 [class*='chip']:not([class*='chips']) {
     background-color: transparent !important;
+    border-radius: 2rem !important;
 }
 
 [class*='chip']:not([class*='chips']).active {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: #2a2a2e !important;
     color: rgba(255, 255, 255, 0.94) !important;
     opacity: 1 !important;
 }
 
 [class*='chip']:not([class*='chips']):hover {
-    background-color: #2a2a2e !important;
+    background-color: transparent !important;
     color: rgba(255, 255, 255, 0.94) !important;
     opacity: 1 !important;
+}
+
+[class*='chip']:not([class*='chips']).active:hover {
+    background-color: #2a2a2e !important;
 }
 
 [class*='nav-menu-popup-label'] [class*='popup-menu-container'],
@@ -402,12 +407,29 @@ html body {
     color: #fff !important;
 }
 
-[class*='toggle-container'].checked,
-[class*='toggle-container'][class*='checked'],
+/* Toggle: colore sul track .toggle (pill), NON sul container */
+[class*='toggle-container'] {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+[class*='toggle-container'] [class*='toggle'] {
+    border-radius: 1.7rem !important;
+    background-color: var(--overlay-color) !important;
+    background-image: none !important;
+}
+
+[class*='toggle-container'].checked [class*='toggle'],
+[class*='toggle-container'][class*='checked'] [class*='toggle'] {
+    background: var(--secondary-accent-color) !important;
+    background-color: var(--secondary-accent-color) !important;
+    background-image: none !important;
+    border-radius: 1.7rem !important;
+}
+
 [class*='checkbox-container'].checked,
-[class*='checkbox-container'][class*='checked'],
-[class*='radio-button'].checked,
-[class*='radio-button'][class*='checked'] {
+[class*='checkbox-container'][class*='checked'] {
     background: var(--secondary-accent-color) !important;
     background-color: var(--secondary-accent-color) !important;
     background-image: none !important;
