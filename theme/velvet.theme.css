@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.5
-@description Nero, secondary #1D1D1D, toggle pill, chip active/hover.
+@version 2.7.6
+@description Nero, sidebar dettaglio glass, secondary #1D1D1D.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Toggle pill corretto; chip active=button, hover=solo testo.
- * @version 2.7.5
+ * @description Sidebar dettaglio glass; search bar border bianco 0.5.
+ * @version 2.7.6
  * @author Velvet
  */
 
@@ -19,7 +19,7 @@
 :root {
     --velvet-modal: rgba(31, 31, 31, 0.92);
     --velvet-modal-solid: #1f1f1f;
-    --velvet-panel: rgba(31, 31, 31, 0.92);
+    --velvet-panel: rgba(10, 10, 12, 0.42);
     --velvet-blur: blur(40px) saturate(170%);
     --velvet-blur-strong: blur(48px) saturate(180%);
     --primary-background-color: #000000;
@@ -350,13 +350,15 @@ html body {
     overflow: hidden !important;
     border: 0 !important;
     background: var(--velvet-panel) !important;
+    background-color: var(--velvet-panel) !important;
+    background-image: none !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4) !important;
     -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
     backdrop-filter: var(--velvet-blur-strong) !important;
+    isolation: isolate !important;
+    transform: translateZ(0) !important;
 }
 
-[class*='videos-list'] [class*='search-bar'],
-[class*='streams-list'] [class*='search-bar'],
 [class*='videos-list'] [class*='seasons-bar'],
 [class*='streams-list'] [class*='seasons-bar'],
 [class*='videos-list'] [class*='dropdown'],
@@ -365,6 +367,19 @@ html body {
 [class*='streams-list'] [class*='multiselect'] {
     background: transparent !important;
     border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+[class*='videos-list'] [class*='search-bar'],
+[class*='streams-list'] [class*='search-bar'],
+[class*='videos-list'] [class*='search-bar-container'],
+[class*='streams-list'] [class*='search-bar-container'] {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
     box-shadow: none !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
