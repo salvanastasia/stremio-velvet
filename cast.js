@@ -1,14 +1,18 @@
 const CINEMETA = 'https://v3-cinemeta.strem.io'
 const TVMAZE_SEARCH = 'https://api.tvmaze.com/search/people'
+const TVMAZE_LOOKUP = 'https://api.tvmaze.com/lookup/shows'
+const WIKIDATA_SPARQL = 'https://query.wikidata.org/sparql'
 const PERSON_PREFIX = 'velvetp:'
+const DEFAULT_CAST_LIMIT = 40
 
 const metaCache = new Map()
 const imageCache = new Map()
+const castNamesCache = new Map()
 
-async function fetchJson(url) {
+async function fetchJson(url, headers = {}) {
     const res = await fetch(url, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(12000),
+        headers: { Accept: 'application/json', ...headers },
+        signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) {
         throw new Error(`HTTP ${res.status} for ${url}`)
@@ -64,6 +68,61 @@ function castNamesFromMeta(meta) {
     return [...new Set([...fromCast, ...fromLinks])]
 }
 
+async function fetchTvMazeCast(imdbId) {
+    try {
+        const show = await fetchJson(`${TVMAZE_LOOKUP}?imdb=${encodeURIComponent(imdbId)}`)
+        if (!show || !show.id) return []
+        const cast = await fetchJson(`https://api.tvmaze.com/shows/${show.id}/cast`)
+        return (cast || [])
+            .map((entry) => {
+                const name = entry && entry.person && entry.person.name
+                if (!name) return null
+                const image =
+                    (entry.person.image && (entry.person.image.medium || entry.person.image.original)) || null
+                if (image) imageCache.set(name, image)
+                return name
+            })
+            .filter(Boolean)
+    } catch {
+        return []
+    }
+}
+
+async function fetchWikidataCast(imdbId) {
+    const query = `
+SELECT ?actorLabel WHERE {
+  ?film wdt:P345 "${imdbId}".
+  ?film wdt:P161 ?actor.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,it". }
+}
+LIMIT 80`
+    try {
+        const url = `${WIKIDATA_SPARQL}?format=json&query=${encodeURIComponent(query)}`
+        const data = await fetchJson(url, {
+            Accept: 'application/sparql-results+json',
+            'User-Agent': 'VelvetCast/1.4 (Stremio addon)',
+        })
+        return (data.results && data.results.bindings ? data.results.bindings : [])
+            .map((row) => row.actorLabel && row.actorLabel.value)
+            .filter(Boolean)
+    } catch {
+        return []
+    }
+}
+
+async function resolveCastNames(type, id, meta) {
+    const cacheKey = `${type}:${id}`
+    if (castNamesCache.has(cacheKey)) {
+        return castNamesCache.get(cacheKey)
+    }
+
+    const [tvmaze, wikidata] = await Promise.all([fetchTvMazeCast(id), fetchWikidataCast(id)])
+    const cinemeta = castNamesFromMeta(meta || {})
+    const names = [...new Set([...tvmaze, ...wikidata, ...cinemeta].filter(Boolean))]
+    castNamesCache.set(cacheKey, names)
+    return names
+}
+
 function toPersonId(name) {
     return PERSON_PREFIX + Buffer.from(String(name), 'utf8').toString('base64url')
 }
@@ -94,11 +153,11 @@ async function mapWithConcurrency(items, limit, mapper) {
     return out
 }
 
-async function getCast(type, id, { limit = 12 } = {}) {
+async function getCast(type, id, { limit = DEFAULT_CAST_LIMIT } = {}) {
     const meta = await fetchCinemeta(type, id)
-    const names = castNamesFromMeta(meta).slice(0, limit)
+    const names = (await resolveCastNames(type, id, meta)).slice(0, limit)
 
-    const cast = await mapWithConcurrency(names, 4, async (name) => {
+    const cast = await mapWithConcurrency(names, 5, async (name) => {
         const image = (await fetchActorImage(name)) || avatarFallback(name)
         return {
             name,
@@ -130,7 +189,7 @@ async function getPersonMeta(id) {
         poster: image,
         posterShape: 'square',
         background: image,
-        description: `${name} — scheda cast Velvet (foto da TVMaze). Apri dai link Cast di un film.`,
+        description: `${name} — scheda cast Velvet (foto da TVMaze).`,
         links: [
             {
                 name: `Cerca ${name}`,
@@ -143,7 +202,7 @@ async function getPersonMeta(id) {
 
 async function getEnrichedMeta(type, id, { publicBase } = {}) {
     const meta = await fetchCinemeta(type, id)
-    const names = castNamesFromMeta(meta)
+    const names = await resolveCastNames(type, id, meta)
     const links = (Array.isArray(meta.links) ? meta.links : []).filter(
         (link) => !(link && /^(cast|actor)$/i.test(link.category || ''))
     )
@@ -151,17 +210,16 @@ async function getEnrichedMeta(type, id, { publicBase } = {}) {
     if (publicBase) {
         links.unshift({
             name: 'Cast con foto',
-            category: 'Cast',
+            category: 'Links',
             url: `${publicBase.replace(/\/$/, '')}/cast-ui/${encodeURIComponent(type)}/${encodeURIComponent(id)}`,
         })
     }
 
-    for (const name of names) {
-        const personId = toPersonId(name)
+    for (const name of names.slice(0, DEFAULT_CAST_LIMIT)) {
         links.push({
             name,
             category: 'Cast',
-            url: `stremio:///detail/channel/${encodeURIComponent(personId)}`,
+            url: `stremio:///detail/channel/${encodeURIComponent(toPersonId(name))}`,
         })
     }
 
@@ -195,35 +253,18 @@ function renderCastGalleryHtml(payload) {
     body {
       margin: 0; min-height: 100vh; font-family: Outfit, Arial, Helvetica, sans-serif;
       color: #f4f7fb; background: #000;
-      background-image:
-        radial-gradient(900px 500px at 10% -10%, rgba(159,223,255,.16), transparent 55%),
-        radial-gradient(700px 420px at 90% 0%, rgba(125,255,200,.08), transparent 50%);
       padding: 2.5rem 2rem 3rem;
     }
     h1 { margin: 0 0 .35rem; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 600; }
     p { margin: 0 0 1.75rem; opacity: .65; }
     .rail {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-      gap: 1.25rem 1rem;
+      display: flex; gap: 1.75rem; overflow-x: auto; padding-bottom: .5rem;
+      -webkit-overflow-scrolling: touch;
     }
-    .card {
-      text-align: center; border-radius: 1.25rem; padding: .85rem .6rem 1rem;
-      border: 1px solid rgba(255,255,255,.18);
-      background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
-      box-shadow: 0 16px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.35);
-      backdrop-filter: blur(22px) saturate(160%);
-      outline: none;
-    }
-    .card:focus, .card:hover {
-      border-color: rgba(159,223,255,.55);
-      transform: translateY(-3px) scale(1.03);
-    }
+    .card { flex: 0 0 auto; width: 7.25rem; text-align: center; outline: none; }
     .avatar {
-      width: 7.5rem; height: 7.5rem; margin: 0 auto .75rem; border-radius: 999px; overflow: hidden;
-      border: 1px solid rgba(255,255,255,.28);
-      box-shadow: 0 12px 28px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35);
-      background: #0a0a0c;
+      width: 7.25rem; height: 7.25rem; margin: 0 auto .75rem; border-radius: 999px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.28); background: #0a0a0c;
     }
     .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .name { font-size: .95rem; line-height: 1.25; }
@@ -233,11 +274,7 @@ function renderCastGalleryHtml(payload) {
 <body>
   <h1>${escapeHtml(payload.name || 'Cast')}</h1>
   <p>Workaround Fire TV · avatar circolari</p>
-  ${
-      actors
-          ? `<div class="rail">${actors}</div>`
-          : `<div class="empty">Nessun attore trovato.</div>`
-  }
+  ${actors ? `<div class="rail">${actors}</div>` : `<div class="empty">Nessun attore trovato.</div>`}
 </body>
 </html>`
 }

@@ -1,8 +1,8 @@
 /**
  * @name Velvet Cast Cards
- * @description Avatar circolari del cast sulla film detail page (Stremio Enhanced).
+ * @description Avatar circolari del cast (lista completa) sulla film detail page.
  * @updateUrl https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/plugins/velvet-cast.plugin.js
- * @version 1.2.1
+ * @version 1.4.0
  * @author Velvet
  */
 
@@ -12,7 +12,11 @@
     const ROOT_ID = 'velvet-cast-root'
     const STYLE_ID = 'velvet-cast-style'
     const CINEMETA = 'https://v3-cinemeta.strem.io'
-    const TVMAZE = 'https://api.tvmaze.com/search/people'
+    const TVMAZE_SEARCH = 'https://api.tvmaze.com/search/people'
+    const TVMAZE_LOOKUP = 'https://api.tvmaze.com/lookup/shows'
+    const WIKIDATA_SPARQL = 'https://query.wikidata.org/sparql'
+    const CAST_LIMIT = 40
+    const SKELETON_COUNT = 8
     const ADDON_CANDIDATES = [
         typeof localStorage !== 'undefined' ? localStorage.getItem('velvetAddonBase') : null,
         'http://127.0.0.1:7070',
@@ -27,6 +31,12 @@
         const style = document.createElement('style')
         style.id = STYLE_ID
         style.textContent = `
+/* Nasconde il blocco Cast nativo di Stremio */
+[class*="meta-links-container"].velvet-native-cast-hidden,
+.velvet-native-cast-hidden {
+  display: none !important;
+}
+
 #${ROOT_ID} {
   display: none;
   width: 100%;
@@ -58,7 +68,8 @@
 #${ROOT_ID} .velvet-cast-panel {
   padding: 1rem 1.1rem 1.15rem;
   border-radius: 1.35rem;
-  border: 1px solid rgba(255,255,255,0.22);
+  border: none;
+  outline: none;
   background:
     linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 34%, rgba(255,255,255,0.08)),
     rgba(8,8,10,0.48);
@@ -80,15 +91,18 @@
 
 #${ROOT_ID} .velvet-cast-rail {
   display: flex;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 1.75rem;
   overflow-x: auto;
-  padding: 0.15rem 0.1rem 0.35rem;
+  overflow-y: hidden;
+  padding: 0.2rem 0.15rem 0.55rem;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 #${ROOT_ID} .velvet-cast-card {
   flex: 0 0 auto;
-  width: 5.5rem;
+  width: 6.75rem;
   text-align: center;
   background: transparent;
   border: 0;
@@ -97,8 +111,8 @@
 }
 
 #${ROOT_ID} .velvet-cast-avatar {
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 6.75rem;
+  height: 6.75rem;
   border-radius: 999px;
   overflow: hidden;
   margin: 0 auto 0.55rem;
@@ -111,7 +125,6 @@
 #${ROOT_ID} .velvet-cast-card:hover .velvet-cast-avatar {
   transform: translateY(-2px) scale(1.04);
   border-color: rgba(159,223,255,0.55);
-  box-shadow: none;
 }
 
 #${ROOT_ID} .velvet-cast-avatar img {
@@ -122,7 +135,7 @@
 }
 
 #${ROOT_ID} .velvet-cast-card .name {
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   line-height: 1.25;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -131,24 +144,68 @@
   opacity: 0.9;
 }
 
-#${ROOT_ID} .velvet-cast-empty,
-#${ROOT_ID} .velvet-cast-loading {
+#${ROOT_ID} .velvet-cast-empty {
   font-size: 0.85rem;
   opacity: 0.65;
+}
+
+#${ROOT_ID} .velvet-skel-avatar {
+  width: 6.75rem;
+  height: 6.75rem;
+  border-radius: 999px;
+  margin: 0 auto 0.55rem;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0%,
+    rgba(255,255,255,0.16) 45%,
+    rgba(255,255,255,0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: velvet-skel-shine 1.15s ease-in-out infinite;
+}
+
+#${ROOT_ID} .velvet-skel-name {
+  height: 0.7rem;
+  width: 78%;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0%,
+    rgba(255,255,255,0.14) 45%,
+    rgba(255,255,255,0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: velvet-skel-shine 1.15s ease-in-out infinite;
+}
+
+@keyframes velvet-skel-shine {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 `
         document.documentElement.appendChild(style)
     }
 
+    function hideNativeCast() {
+        const blocks = document.querySelectorAll('[class*="meta-links-container"]')
+        blocks.forEach((block) => {
+            if (block.closest(`#${ROOT_ID}`)) return
+            const label = block.querySelector('[class*="label-container"]')
+            const text = ((label && label.textContent) || '').trim()
+            if (/^cast$/i.test(text)) {
+                block.classList.add('velvet-native-cast-hidden')
+                block.style.setProperty('display', 'none', 'important')
+            }
+        })
+    }
+
     function parseDetailRoute() {
-        const haystack = [
-            location.href,
-            location.hash,
-            location.pathname,
-            location.search,
-        ].join(' ')
-        const match = haystack.match(/\/(?:metadetails|detail)\/(movie|series)\/(tt\d+)/i)
-            || haystack.match(/[?&#/](movie|series)[/:](tt\d+)/i)
+        const haystack = [location.href, location.hash, location.pathname, location.search].join(' ')
+        const match =
+            haystack.match(/\/(?:metadetails|detail)\/(movie|series)\/(tt\d+)/i) ||
+            haystack.match(/[?&#/](movie|series)[/:](tt\d+)/i)
         if (!match) return null
         return { type: match[1].toLowerCase(), id: match[2] }
     }
@@ -205,6 +262,20 @@
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=141418&color=9fdfff&size=256&bold=true&rounded=true`
     }
 
+    function renderSkeleton(root, title) {
+        root.classList.add('is-visible')
+        const items = Array.from({ length: SKELETON_COUNT }, () => `
+          <article class="velvet-cast-card" aria-hidden="true">
+            <div class="velvet-skel-avatar"></div>
+            <div class="velvet-skel-name"></div>
+          </article>`).join('')
+        root.innerHTML = `
+          <div class="velvet-cast-panel">
+            <div class="velvet-cast-title">Cast${title ? ` · ${escapeHtml(title)}` : ''}</div>
+            <div class="velvet-cast-rail">${items}</div>
+          </div>`
+    }
+
     function render(root, payload) {
         const cast = (payload && payload.cast) || []
         root.classList.add('is-visible')
@@ -237,12 +308,12 @@
     }
 
     async function enrichImages(names) {
-        const unique = [...new Set(names.filter(Boolean))].slice(0, 16)
+        const unique = [...new Set(names.filter(Boolean))].slice(0, CAST_LIMIT)
         const cast = await Promise.all(
             unique.map(async (name) => {
                 let image = null
                 try {
-                    const res = await fetch(`${TVMAZE}?q=${encodeURIComponent(name)}`)
+                    const res = await fetch(`${TVMAZE_SEARCH}?q=${encodeURIComponent(name)}`)
                     if (res.ok) {
                         const data = await res.json()
                         const hit =
@@ -254,12 +325,59 @@
                                 : null
                     }
                 } catch (_) {
-                    /* avatar fallback */
+                    /* fallback */
                 }
                 return { name, image: image || avatarFallback(name) }
             })
         )
         return cast
+    }
+
+    async function fetchTvMazeCast(imdbId) {
+        try {
+            const showRes = await fetch(`${TVMAZE_LOOKUP}?imdb=${encodeURIComponent(imdbId)}`)
+            if (!showRes.ok) return []
+            const show = await showRes.json()
+            if (!show || !show.id) return []
+            const castRes = await fetch(`https://api.tvmaze.com/shows/${show.id}/cast`)
+            if (!castRes.ok) return []
+            const cast = await castRes.json()
+            return (cast || [])
+                .map((entry) => {
+                    const name = entry && entry.person && entry.person.name
+                    if (!name) return null
+                    return {
+                        name,
+                        image:
+                            (entry.person.image && (entry.person.image.medium || entry.person.image.original)) ||
+                            null,
+                    }
+                })
+                .filter(Boolean)
+        } catch (_) {
+            return []
+        }
+    }
+
+    async function fetchWikidataCast(imdbId) {
+        const query = `
+SELECT ?actorLabel WHERE {
+  ?film wdt:P345 "${imdbId}".
+  ?film wdt:P161 ?actor.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en,it". }
+}
+LIMIT 80`
+        try {
+            const url = `${WIKIDATA_SPARQL}?format=json&query=${encodeURIComponent(query)}`
+            const res = await fetch(url, { headers: { Accept: 'application/sparql-results+json' } })
+            if (!res.ok) return []
+            const data = await res.json()
+            return (data.results && data.results.bindings ? data.results.bindings : [])
+                .map((row) => row.actorLabel && row.actorLabel.value)
+                .filter(Boolean)
+        } catch (_) {
+            return []
+        }
     }
 
     async function loadFromAddon(type, id) {
@@ -268,7 +386,7 @@
             try {
                 const res = await fetch(
                     `${base}/api/cast/${encodeURIComponent(type)}/${encodeURIComponent(id)}.json`,
-                    { signal: AbortSignal.timeout(2500) }
+                    { signal: AbortSignal.timeout(8000) }
                 )
                 if (!res.ok) throw new Error(`HTTP ${res.status}`)
                 return await res.json()
@@ -279,26 +397,54 @@
         throw lastError || new Error('addon cast failed')
     }
 
-    async function loadFromCinemeta(type, id) {
-        const res = await fetch(`${CINEMETA}/meta/${encodeURIComponent(type)}/${encodeURIComponent(id)}.json`)
-        if (!res.ok) throw new Error('cinemeta failed')
-        const data = await res.json()
-        const meta = data.meta || {}
-        const fromCast = Array.isArray(meta.cast) ? meta.cast : []
-        const fromLinks = (meta.links || [])
-            .filter((link) => /^(cast|actor)$/i.test(link.category || ''))
-            .map((link) => link.name)
-        const names = [...new Set([...fromCast, ...fromLinks].filter(Boolean))]
+    async function loadFullCast(type, id) {
+        const metaRes = await fetch(`${CINEMETA}/meta/${encodeURIComponent(type)}/${encodeURIComponent(id)}.json`)
+        if (!metaRes.ok) throw new Error('cinemeta failed')
+        const metaData = await metaRes.json()
+        const meta = metaData.meta || {}
+        const title = meta.name || id
+
+        const [tvmazePeople, wikidataNames] = await Promise.all([
+            fetchTvMazeCast(id),
+            fetchWikidataCast(id),
+        ])
+
+        const fromMeta = [
+            ...(Array.isArray(meta.cast) ? meta.cast : []),
+            ...((meta.links || [])
+                .filter((link) => /^(cast|actor)$/i.test(link.category || ''))
+                .map((link) => link.name)),
+        ]
+
+        const byName = new Map()
+        for (const person of tvmazePeople) {
+            byName.set(person.name.toLowerCase(), person)
+        }
+        for (const name of [...wikidataNames, ...fromMeta].filter(Boolean)) {
+            const key = name.toLowerCase()
+            if (!byName.has(key)) byName.set(key, { name, image: null })
+        }
+
+        const names = [...byName.values()].slice(0, CAST_LIMIT)
+        const needImages = names.filter((person) => !person.image).map((person) => person.name)
+        const imaged = needImages.length ? await enrichImages(needImages) : []
+        const imageMap = new Map(imaged.map((person) => [person.name.toLowerCase(), person.image]))
+
         return {
             id,
             type,
-            name: meta.name || id,
-            cast: await enrichImages(names),
+            name: title,
+            cast: names.map((person) => ({
+                name: person.name,
+                image: person.image || imageMap.get(person.name.toLowerCase()) || avatarFallback(person.name),
+            })),
         }
     }
 
     async function sync() {
         ensureStyles()
+        hideNativeCast()
+
         const route = parseDetailRoute()
         if (!route) {
             hide()
@@ -308,28 +454,25 @@
         const key = `${route.type}:${route.id}`
         if (key === lastKey || key === loadingKey) {
             ensureRoot()
+            hideNativeCast()
             return
         }
 
         loadingKey = key
         const root = ensureRoot()
-        root.classList.add('is-visible')
-        root.innerHTML = `
-          <div class="velvet-cast-panel">
-            <div class="velvet-cast-title">Cast</div>
-            <div class="velvet-cast-loading">Carico gli attori…</div>
-          </div>`
+        renderSkeleton(root)
 
         try {
             let payload
             try {
-                payload = await loadFromCinemeta(route.type, route.id)
+                payload = await loadFullCast(route.type, route.id)
             } catch (_) {
                 payload = await loadFromAddon(route.type, route.id)
             }
             if (loadingKey !== key) return
             lastKey = key
             render(ensureRoot(), payload)
+            hideNativeCast()
         } catch (_) {
             if (loadingKey !== key) return
             ensureRoot().innerHTML = `
@@ -343,12 +486,16 @@
     }
 
     const observer = new MutationObserver(() => {
+        hideNativeCast()
         window.clearTimeout(sync._t)
         sync._t = window.setTimeout(sync, 120)
     })
     observer.observe(document.documentElement, { childList: true, subtree: true })
     window.addEventListener('hashchange', sync)
     window.addEventListener('popstate', sync)
-    setInterval(sync, 1500)
+    setInterval(() => {
+        hideNativeCast()
+        sync()
+    }, 1500)
     sync()
 })()

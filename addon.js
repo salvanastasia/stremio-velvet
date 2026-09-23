@@ -52,7 +52,7 @@ function currentPublicBase() {
 
 const manifest = {
     id: 'com.velvet.cinema',
-    version: '1.3.0',
+    version: '1.4.0',
     name: 'Velvet',
     description:
         'MP4 open + cast. Su Fire TV: link Cast → foto attore, oppure “Cast con foto” (avatar).',
