@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.2
+@version 2.7.3
 @description Nero, modali #1f1f1f, gradient solo Aggiungi addon.
 @match https://web.stremio.com/*
 ==/UserStyle==
@@ -10,7 +10,7 @@
 /**
  * @name Velvet Liquid Glass
  * @description Gradient logo solo install; progress bianca; search neutra.
- * @version 2.7.2
+ * @version 2.7.3
  * @author Velvet
  */
 
@@ -158,13 +158,14 @@ html body {
 }
 
 [class*='chip']:not([class*='chips']).active {
-    background-color: #2a2a2e !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
     color: rgba(255, 255, 255, 0.94) !important;
     opacity: 1 !important;
 }
 
 [class*='chip']:not([class*='chips']):hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: #2a2a2e !important;
+    color: rgba(255, 255, 255, 0.94) !important;
     opacity: 1 !important;
 }
 
