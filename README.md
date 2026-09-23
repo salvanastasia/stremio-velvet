@@ -8,6 +8,7 @@ Addon Stremio con film open in MP4 (riproducibili nel browser), tema liquid glas
 |------|-----|
 | Repo | https://github.com/salvanastasia/stremio-velvet |
 | Plugin cast (Enhanced) | https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/plugins/velvet-cast.plugin.js |
+| Userscript (Stremio Web) | https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/userscripts/velvet-cast.user.js |
 | Tema CSS | https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/theme/velvet.theme.css |
 
 L’addon Node va avviato in locale (o deployato): Stremio non può usare un file GitHub come server.
@@ -19,14 +20,24 @@ npm start
 
 Manifest locale: `http://127.0.0.1:7070/manifest.json`
 
-## Plugin cast (Stremio Enhanced)
+## Cast con avatar (obbligatorio)
 
+Stremio ufficiale **non disegna** foto/card del cast: mostra solo i nomi come link.
+Per gli avatar circolari serve uno di questi:
+
+### A) Stremio Enhanced
 1. Settings → Open Plugins Folder  
-2. Salva `velvet-cast.plugin.js` (dal raw link sopra)  
+2. Scarica [velvet-cast.plugin.js](https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/plugins/velvet-cast.plugin.js)  
 3. Riavvia Enhanced  
-4. Apri un film: card cast in basso sulla detail page  
+4. Apri un film (es. Inception): avatar sotto i dettagli  
 
-Il plugin prova prima `http://127.0.0.1:7070/api/cast/...`; se l’addon non è su, usa Cinemeta + TVMaze.
+### B) Stremio Web ufficiale
+1. Installa Tampermonkey / Violentmonkey  
+2. Nuovo script da URL:  
+   https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/userscripts/velvet-cast.user.js  
+3. Ricarica `web.stremio.com` e apri un film  
+
+Il cast arriva da Cinemeta + foto TVMaze (HTTPS). L’addon locale è opzionale.
 
 ## Tema
 

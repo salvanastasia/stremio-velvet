@@ -1,10 +1,15 @@
-/**
- * @name Velvet Cast Cards
- * @description Avatar circolari del cast sulla film detail page (Stremio Enhanced).
- * @updateUrl https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/plugins/velvet-cast.plugin.js
- * @version 1.2.0
- * @author Velvet
- */
+// ==UserScript==
+// @name         Velvet Cast Avatars
+// @namespace    https://github.com/salvanastasia/stremio-velvet
+// @version      1.2.0
+// @description  Avatar circolari del cast sulla detail page di Stremio Web
+// @author       Velvet
+// @match        https://web.stremio.com/*
+// @match        https://app.strem.io/*
+// @grant        none
+// @updateURL    https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/userscripts/velvet-cast.user.js
+// @downloadURL  https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/userscripts/velvet-cast.user.js
+// ==/UserScript==
 
 (function () {
     'use strict'
