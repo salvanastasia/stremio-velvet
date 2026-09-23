@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.4.0
-@description Nero, blur intenso su modal/play, UI pulita.
+@version 2.5.0
+@description Nero, blur intenso su modal/play/dropdown, UI pulita.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Nero + blur forte; hover play per item; dim siblings solo in hover.
- * @version 2.4.0
+ * @description Nero + blur forte; dropdown blur; chip library grigio scuro.
+ * @version 2.5.0
  * @author Velvet
  */
 
@@ -80,13 +80,43 @@ html body {
 [class*='nav-menu-container'],
 [class*='popup-menu-container'],
 [class*='menu-container'] {
-    background: var(--velvet-panel) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
     background-image: none !important;
     border: 0 !important;
     border-radius: var(--border-radius) !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
     -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
     backdrop-filter: var(--velvet-blur-strong) !important;
+}
+
+/* Trigger + pannello dropdown (Multiselect): stesso blur del play */
+[class*='label-container'] {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
+}
+
+[class*='popup-menu-container'] [class*='menu-container'],
+[class*='modal-container'] [class*='menu-container'],
+[class*='multiselect'] [class*='menu-container'] {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 0 !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
+}
+
+/* Library tab chips: attivo = grigio scuro (non accent azzurro) */
+[class*='chip'].active,
+[class*='chip'][class*='active'] {
+    background-color: #2a2a2e !important;
+    color: rgba(255, 255, 255, 0.94) !important;
+    opacity: 1 !important;
+}
+
+[class*='chip']:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 [class*='nav-menu-popup-label'] [class*='popup-menu-container'],
