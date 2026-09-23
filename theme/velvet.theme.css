@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.3
-@description Nero, modali #1f1f1f, gradient solo Aggiungi addon.
+@version 2.7.4
+@description Nero, secondary-accent #1D1D1D su CTA/toggle.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Gradient logo solo install; progress bianca; search neutra.
- * @version 2.7.3
+ * @description secondary-accent #1D1D1D; CTA/toggle senza override teal/gradient.
+ * @version 2.7.4
  * @author Velvet
  */
 
@@ -22,9 +22,6 @@
     --velvet-panel: rgba(31, 31, 31, 0.92);
     --velvet-blur: blur(40px) saturate(170%);
     --velvet-blur-strong: blur(48px) saturate(180%);
-    --velvet-logo-from: #6a53d5;
-    --velvet-logo-to: #244cbd;
-    --velvet-logo-gradient: linear-gradient(135deg, var(--velvet-logo-from) 0%, var(--velvet-logo-to) 100%);
     --primary-background-color: #000000;
     --secondary-background-color: #000000;
     --primary-foreground-color: rgba(255, 255, 255, 0.94);
@@ -376,23 +373,45 @@ html body {
     display: none !important;
 }
 
-/* —— Solo “Aggiungi addon”: gradient logo —— */
-[class*='install-button-container'] {
-    background: var(--velvet-logo-gradient) !important;
-    background-color: transparent !important;
+/* —— CTA / toggle: rispettano --secondary-accent-color —— */
+[class*='install-button-container'],
+[class*='add-button-container'],
+[class*='configure-button-container'] {
+    background: var(--secondary-accent-color) !important;
+    background-color: var(--secondary-accent-color) !important;
+    background-image: none !important;
     border: 0 !important;
-    outline-color: var(--velvet-logo-from) !important;
+    outline-color: var(--secondary-accent-color) !important;
 }
 
-[class*='install-button-container']:hover {
+[class*='install-button-container']:hover,
+[class*='add-button-container']:hover,
+[class*='configure-button-container']:hover {
     background: transparent !important;
     background-color: transparent !important;
-    outline: 2px solid var(--velvet-logo-from) !important;
+    background-image: none !important;
+    outline: 2px solid var(--secondary-accent-color) !important;
 }
 
 [class*='install-button-container'] [class*='label'],
-[class*='install-button-container'] [class*='icon'] {
+[class*='install-button-container'] [class*='icon'],
+[class*='add-button-container'] [class*='label'],
+[class*='add-button-container'] [class*='icon'],
+[class*='configure-button-container'] [class*='label'],
+[class*='configure-button-container'] [class*='icon'] {
     color: #fff !important;
+}
+
+[class*='toggle-container'].checked,
+[class*='toggle-container'][class*='checked'],
+[class*='checkbox-container'].checked,
+[class*='checkbox-container'][class*='checked'],
+[class*='radio-button'].checked,
+[class*='radio-button'][class*='checked'] {
+    background: var(--secondary-accent-color) !important;
+    background-color: var(--secondary-accent-color) !important;
+    background-image: none !important;
+    border-color: var(--secondary-accent-color) !important;
 }
 
 /* Progress contenuti: bianca (niente accent/gradient) */
