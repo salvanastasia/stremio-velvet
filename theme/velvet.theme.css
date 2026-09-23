@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.1
-@description Nero, modali #1f1f1f, gradient solo su Aggiungi addon.
+@version 2.7.2
+@description Nero, modali #1f1f1f, gradient solo Aggiungi addon.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Modali #1f1f1f; gradient logo solo su install addon.
- * @version 2.7.1
+ * @description Gradient logo solo install; progress bianca; search neutra.
+ * @version 2.7.2
  * @author Velvet
  */
 
@@ -392,6 +392,53 @@ html body {
 [class*='install-button-container'] [class*='label'],
 [class*='install-button-container'] [class*='icon'] {
     color: #fff !important;
+}
+
+/* Progress contenuti: bianca (niente accent/gradient) */
+[class*='progress-bar-layer'] [class*='progress-bar'],
+[class*='poster-container'] [class*='progress-bar']:not([class*='progress-bar-layer']):not([class*='progress-bar-background']),
+[class*='meta-item-container'] [class*='progress-bar']:not([class*='background']),
+[class*='lib-item'] [class*='progress-bar']:not([class*='background']) {
+    background: #fff !important;
+    background-color: #fff !important;
+    background-image: none !important;
+}
+
+[class*='progress-bar-background'] {
+    background: #fff !important;
+    background-color: #fff !important;
+    background-image: none !important;
+    opacity: 0.3 !important;
+}
+
+/* Search: grigio neutro, niente gradient/accent */
+[class*='search-bar-container'],
+[class*='horizontal-nav-bar'] [class*='search-bar'],
+[class*='nav-bar'] [class*='search-bar']:not([class*='videos-list'] *) {
+    background: var(--velvet-modal) !important;
+    background-image: none !important;
+    border-color: transparent !important;
+}
+
+[class*='search-bar-container'] [class*='button'],
+[class*='search-bar-container'] [class*='submit'],
+[class*='search-bar-container'] [class*='icon-container'],
+[class*='search-bar'] [class*='button'],
+[class*='search-bar'] [class*='submit'],
+[class*='search-bar-container'] > [class*='button-container'],
+[class*='search-bar-container'] > button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+[class*='search-bar-container'] [class*='icon'],
+[class*='search-bar'] [class*='icon'] {
+    color: rgba(255, 255, 255, 0.7) !important;
+    background: transparent !important;
+    background-image: none !important;
 }
 
 @media only screen and (max-width: 840px) {
