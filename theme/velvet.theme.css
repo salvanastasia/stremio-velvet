@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.3.0
+@version 2.4.0
 @description Nero, blur intenso su modal/play, UI pulita.
 @match https://web.stremio.com/*
 ==/UserStyle==
@@ -9,8 +9,8 @@
 
 /**
  * @name Velvet Liquid Glass
- * @description Nero + blur forte su modal/menu/play; titoli a 0.6.
- * @version 2.3.0
+ * @description Nero + blur forte; hover play per item; dim siblings solo in hover.
+ * @version 2.4.0
  * @author Velvet
  */
 
@@ -112,41 +112,72 @@ html body {
     background: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Poster */
+/* Poster / item */
 [class*='meta-item-container'],
-[class*='meta-item'],
 [class*='lib-item'] {
     border-radius: 0.85rem !important;
     box-shadow: none !important;
-    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 1 !important;
+    transition:
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 160ms ease !important;
 }
 
 [class*='poster-container'] {
     border-radius: 0.85rem !important;
     overflow: hidden !important;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4) !important;
+    opacity: 1 !important;
+    transition: opacity 160ms ease !important;
+}
+
+[class*='title-label'] {
+    opacity: 1 !important;
+    transition: opacity 160ms ease !important;
 }
 
 [class*='meta-item-container']:hover,
-[class*='meta-item']:hover,
 [class*='lib-item']:hover {
     transform: translateY(-2px);
 }
 
-/* Titoli a riposo */
-[class*='title-label'] {
+/*
+  Lista a riposo = full opacity.
+  Solo mentre un titolo è in hover: gli altri (cover + titolo) a 0.6,
+  quello hovered resta a 1.
+*/
+[class*='board-row']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='meta-row']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='metas-list']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='metas-container']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='catalog-content']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='library-content']:has([class*='lib-item']:hover) [class*='lib-item'],
+[class*='lib-items']:has([class*='lib-item']:hover) [class*='lib-item'] {
     opacity: 0.6 !important;
-    transition: opacity 160ms ease !important;
 }
 
-[class*='meta-item-container']:hover [class*='title-label'],
-[class*='meta-item']:hover [class*='title-label'],
-[class*='lib-item']:hover [class*='title-label'],
-[class*='meta-item-container']:focus-within [class*='title-label'] {
+[class*='board-row']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='meta-row']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='metas-list']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='metas-container']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='catalog-content']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='library-content']:has([class*='lib-item']:hover) [class*='lib-item']:hover,
+[class*='lib-items']:has([class*='lib-item']:hover) [class*='lib-item']:hover {
     opacity: 1 !important;
 }
 
-/* —— Play: blur, no stroke —— */
+/* Fallback generico se il parent non matcha i nomi sopra */
+[class*='meta-items']:has([class*='meta-item-container']:hover) [class*='meta-item-container'],
+[class*='continue-watching']:has([class*='meta-item-container']:hover) [class*='meta-item-container'] {
+    opacity: 0.6 !important;
+}
+
+[class*='meta-items']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover,
+[class*='continue-watching']:has([class*='meta-item-container']:hover) [class*='meta-item-container']:hover {
+    opacity: 1 !important;
+}
+
+/* —— Play: blur, no stroke (solo lo stato base) —— */
 [class*='play-icon-outer'] {
     color: transparent !important;
     box-shadow: none !important;
@@ -168,12 +199,9 @@ html body {
     color: #fff !important;
 }
 
-/* Hover titolo → play bianco / icona nera */
+/* Play invertito SOLO sull'item hovered (non selected/active della lista) */
 [class*='meta-item-container']:hover [class*='play-icon-background'],
-[class*='meta-item']:hover [class*='play-icon-background'],
-[class*='lib-item']:hover [class*='play-icon-background'],
-[class*='meta-item-container']:focus-within [class*='play-icon-background'],
-[class*='play-icon-layer']:hover [class*='play-icon-background'] {
+[class*='lib-item']:hover [class*='play-icon-background'] {
     background-color: #fff !important;
     opacity: 1 !important;
     -webkit-backdrop-filter: none !important;
@@ -181,23 +209,43 @@ html body {
 }
 
 [class*='meta-item-container']:hover [class*='play-icon-layer'] [class*='play-icon'],
-[class*='meta-item']:hover [class*='play-icon-layer'] [class*='play-icon'],
-[class*='lib-item']:hover [class*='play-icon-layer'] [class*='play-icon'],
-[class*='meta-item-container']:focus-within [class*='play-icon-layer'] [class*='play-icon'],
-[class*='play-icon-layer']:hover [class*='play-icon'] {
+[class*='lib-item']:hover [class*='play-icon-layer'] [class*='play-icon'] {
     color: #000 !important;
 }
 
 [class*='meta-item-container']:hover [class*='play-icon-outer'],
-[class*='meta-item']:hover [class*='play-icon-outer'],
-[class*='play-icon-layer']:hover [class*='play-icon-outer'] {
+[class*='lib-item']:hover [class*='play-icon-outer'] {
     color: transparent !important;
     box-shadow: none !important;
 }
 
-/* Niente anello bianco sul poster in hover (default Stremio) */
-[class*='meta-item-container']:hover [class*='poster-container'],
-[class*='meta-item']:hover [class*='poster-container'] {
+/* Annulla lo stile play di Stremio su .selected / .active (solo hover dell'item) */
+[class*='meta-item-container'].selected [class*='play-icon-background'],
+[class*='meta-item-container'].active [class*='play-icon-background'] {
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
+}
+
+[class*='meta-item-container'].selected [class*='play-icon-layer'] [class*='play-icon'],
+[class*='meta-item-container'].active [class*='play-icon-layer'] [class*='play-icon'] {
+    color: #fff !important;
+}
+
+[class*='meta-item-container'].selected:hover [class*='play-icon-background'],
+[class*='meta-item-container'].active:hover [class*='play-icon-background'] {
+    background-color: #fff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+[class*='meta-item-container'].selected:hover [class*='play-icon-layer'] [class*='play-icon'],
+[class*='meta-item-container'].active:hover [class*='play-icon-layer'] [class*='play-icon'] {
+    color: #000 !important;
+}
+
+/* Niente anello bianco sul poster in hover */
+[class*='meta-item-container']:hover [class*='poster-container'] {
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
 }
 
