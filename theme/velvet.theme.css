@@ -98,6 +98,13 @@ html body {
     backdrop-filter: var(--velvet-blur-strong) !important;
 }
 
+[class*='meta-links'] [class*='label-container'],
+[class*='meta-preview'] [class*='label-container'] {
+    background: transparent !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
 [class*='popup-menu-container'] [class*='menu-container'],
 [class*='modal-container'] [class*='menu-container'],
 [class*='multiselect'] [class*='menu-container'] {
