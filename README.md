@@ -39,6 +39,15 @@ Per gli avatar circolari serve uno di questi:
 
 Il cast arriva da Cinemeta + foto TVMaze (HTTPS). L’addon locale è opzionale.
 
-## Tema
+## Fire TV (workaround senza plugin)
 
-Copia `theme/velvet.theme.css` nella cartella temi di Stremio Enhanced, oppure installalo con Stylus su `web.stremio.com`.
+Su Fire TV non si possono iniettare avatar nella UI. Velvet espone due percorsi **nativi**:
+
+1. **Link Cast** sul film → apre la scheda attore con **poster/foto grande** (meta `channel` / `velvetp:…`)
+2. **“Cast con foto”** → apre la pagina `/cast-ui/...` nel browser della TV con **avatar circolari**
+
+Importante: da Fire TV **non** usare `127.0.0.1` (è la TV stessa). Usa l’IP LAN del PC, es.:
+
+`http://192.168.1.20:7070/manifest.json`
+
+Oppure pubblica l’addon online (Vercel/Beamup) e installa quell’URL HTTPS.

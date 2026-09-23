@@ -2,10 +2,16 @@ const path = require('path')
 const express = require('express')
 const { addonBuilder, getRouter } = require('stremio-addon-sdk')
 const landingTemplate = require('stremio-addon-sdk/src/landingTemplate')
-const { getCast, getEnrichedMeta } = require('./cast')
+const {
+    PERSON_PREFIX,
+    getCast,
+    getEnrichedMeta,
+    getPersonMeta,
+    renderCastGalleryHtml,
+} = require('./cast')
 
-// Stream HTTPS MP4 per pochi film open. Cast da Cinemeta + foto TVMaze.
-// Le card in overlay sulla detail page richiedono il plugin Enhanced (non bastano i meta).
+// Stream HTTPS MP4 + cast.
+// Fire TV: niente plugin → schede attore (poster) + pagina /cast-ui con avatar.
 const MOVIES = [
     {
         id: 'tt1254207',
@@ -38,15 +44,21 @@ const MOVIES = [
 
 const moviesById = new Map(MOVIES.map((movie) => [movie.id, movie]))
 
+let publicBase = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '')
+
+function currentPublicBase() {
+    return publicBase
+}
+
 const manifest = {
     id: 'com.velvet.cinema',
-    version: '1.1.0',
+    version: '1.3.0',
     name: 'Velvet',
     description:
-        'MP4 open + cast automatico (Cinemeta). Card attori in overlay: plugin Enhanced velvet-cast.',
+        'MP4 open + cast. Su Fire TV: link Cast → foto attore, oppure “Cast con foto” (avatar).',
     resources: ['catalog', 'meta', 'stream'],
-    types: ['movie', 'series'],
-    idPrefixes: ['tt'],
+    types: ['movie', 'series', 'channel'],
+    idPrefixes: ['tt', PERSON_PREFIX],
     catalogs: [
         {
             type: 'movie',
@@ -77,12 +89,26 @@ builder.defineCatalogHandler(({ type, id }) => {
 })
 
 builder.defineMetaHandler(async ({ type, id }) => {
-    if (!id || !String(id).startsWith('tt')) {
-        return Promise.resolve({ meta: null })
+    if (!id) {
+        return { meta: null }
+    }
+
+    if (String(id).startsWith(PERSON_PREFIX)) {
+        try {
+            return { meta: await getPersonMeta(id) }
+        } catch {
+            return { meta: null }
+        }
+    }
+
+    if (!String(id).startsWith('tt')) {
+        return { meta: null }
     }
 
     try {
-        const meta = await getEnrichedMeta(type || 'movie', id)
+        const meta = await getEnrichedMeta(type || 'movie', id, {
+            publicBase: currentPublicBase(),
+        })
         return { meta }
     } catch {
         const local = moviesById.get(id)
@@ -127,12 +153,16 @@ builder.defineStreamHandler(({ type, id }) => {
 })
 
 const addonInterface = builder.getInterface()
-const port = Number(process.env.PORT) || 7070
 const app = express()
 const landingHTML = landingTemplate(addonInterface.manifest)
 
-app.use((_, res, next) => {
+app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
+    if (!process.env.PUBLIC_BASE_URL) {
+        const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http'
+        const host = req.get('host')
+        if (host) publicBase = `${proto}://${host}`
+    }
     next()
 })
 
@@ -150,16 +180,33 @@ app.get('/api/cast/:type/:id.json', async (req, res) => {
     }
 })
 
+app.get('/cast-ui/:type/:id', async (req, res) => {
+    try {
+        const payload = await getCast(req.params.type, req.params.id)
+        res.setHeader('content-type', 'text/html; charset=utf-8')
+        res.setHeader('Cache-Control', 'public, max-age=600')
+        res.end(renderCastGalleryHtml(payload))
+    } catch (error) {
+        res.status(404).type('html').send(`<h1>Cast non disponibile</h1><p>${error.message}</p>`)
+    }
+})
+
 app.use(getRouter(addonInterface))
 app.use('/theme', express.static(path.join(__dirname, 'theme')))
 app.use('/plugins', express.static(path.join(__dirname, 'plugins')))
+app.use('/userscripts', express.static(path.join(__dirname, 'userscripts')))
 app.get('/', (_, res) => {
     res.setHeader('content-type', 'text/html')
     res.end(landingHTML)
 })
 
-app.listen(port, () => {
-    console.log(`Velvet in ascolto su http://127.0.0.1:${port}/manifest.json`)
-    console.log(`Cast API: http://127.0.0.1:${port}/api/cast/movie/tt1375666.json`)
-    console.log(`Plugin: http://127.0.0.1:${port}/plugins/velvet-cast.plugin.js`)
-})
+module.exports = app
+
+if (require.main === module) {
+    const port = Number(process.env.PORT) || 7070
+    app.listen(port, '0.0.0.0', () => {
+        console.log(`Velvet in ascolto su http://127.0.0.1:${port}/manifest.json`)
+        console.log(`Fire TV: usa l'IP LAN del PC, non 127.0.0.1`)
+        console.log(`Cast UI: http://127.0.0.1:${port}/cast-ui/movie/tt1375666`)
+    })
+}
