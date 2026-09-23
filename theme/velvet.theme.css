@@ -1,24 +1,25 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.2.0
-@description Fondo nero, glass solo dove serve, UI più pulita.
+@version 2.3.0
+@description Nero, blur intenso su modal/play, UI pulita.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Nero pulito + glass minimale (niente bordi innestati).
- * @version 2.2.0
+ * @description Nero + blur forte su modal/menu/play; titoli a 0.6.
+ * @version 2.3.0
  * @author Velvet
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap');
 
 :root {
-    --velvet-panel: rgba(12, 12, 14, 0.55);
-    --velvet-blur: blur(24px) saturate(140%);
+    --velvet-panel: rgba(10, 10, 12, 0.42);
+    --velvet-blur: blur(40px) saturate(170%);
+    --velvet-blur-strong: blur(48px) saturate(180%);
     --primary-background-color: #000000;
     --secondary-background-color: #000000;
     --primary-foreground-color: rgba(255, 255, 255, 0.94);
@@ -28,7 +29,7 @@
     --tertiary-accent-color: #ffe08a;
     --quaternary-accent-color: #9fdfff;
     --overlay-color: rgba(255, 255, 255, 0.06);
-    --modal-background-color: rgba(10, 10, 12, 0.72);
+    --modal-background-color: rgba(10, 10, 12, 0.42);
     --outer-glow: none;
     --warning-accent-color: #ffb347;
     --danger-accent-color: #ff6b7a;
@@ -69,23 +70,31 @@ html body {
     background-color: rgba(159, 223, 255, 0.45);
 }
 
-/* —— Solo superfici “di primo livello” —— */
+/* —— Modal / menu / toast: blur intenso —— */
 [class*='modal-dialog'],
 [class*='modal-container'],
 [class*='toast-item'],
 [class*='tooltip-container'],
 [class*='context-menu'],
-[class*='menu-layer'] {
+[class*='menu-layer'],
+[class*='nav-menu-container'],
+[class*='popup-menu-container'],
+[class*='menu-container'] {
     background: var(--velvet-panel) !important;
     background-image: none !important;
     border: 0 !important;
     border-radius: var(--border-radius) !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
-    -webkit-backdrop-filter: var(--velvet-blur) !important;
-    backdrop-filter: var(--velvet-blur) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
 }
 
-/* Nav: niente card, solo trasparenza leggera */
+[class*='nav-menu-popup-label'] [class*='popup-menu-container'],
+[class*='nav-menu-popup-label'] [class*='menu-container'] {
+    margin: 0.75rem !important;
+}
+
+/* Nav: pulita */
 [class*='horizontal-nav-bar'],
 [class*='vertical-nav-bar-container'] {
     background: transparent !important;
@@ -103,21 +112,96 @@ html body {
     background: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Poster: solo raggio, niente stroke innestato */
+/* Poster */
+[class*='meta-item-container'],
 [class*='meta-item'],
 [class*='lib-item'] {
     border-radius: 0.85rem !important;
-    overflow: hidden;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: none !important;
     transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+[class*='poster-container'] {
+    border-radius: 0.85rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4) !important;
+}
+
+[class*='meta-item-container']:hover,
 [class*='meta-item']:hover,
 [class*='lib-item']:hover {
     transform: translateY(-2px);
 }
 
-/* —— Pannello episodi / stream: floating —— */
+/* Titoli a riposo */
+[class*='title-label'] {
+    opacity: 0.6 !important;
+    transition: opacity 160ms ease !important;
+}
+
+[class*='meta-item-container']:hover [class*='title-label'],
+[class*='meta-item']:hover [class*='title-label'],
+[class*='lib-item']:hover [class*='title-label'],
+[class*='meta-item-container']:focus-within [class*='title-label'] {
+    opacity: 1 !important;
+}
+
+/* —— Play: blur, no stroke —— */
+[class*='play-icon-outer'] {
+    color: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+[class*='play-icon-background'] {
+    background-color: rgba(255, 255, 255, 0.14) !important;
+    opacity: 1 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
+}
+
+[class*='play-icon-layer'] [class*='play-icon'] {
+    color: #fff !important;
+}
+
+/* Hover titolo → play bianco / icona nera */
+[class*='meta-item-container']:hover [class*='play-icon-background'],
+[class*='meta-item']:hover [class*='play-icon-background'],
+[class*='lib-item']:hover [class*='play-icon-background'],
+[class*='meta-item-container']:focus-within [class*='play-icon-background'],
+[class*='play-icon-layer']:hover [class*='play-icon-background'] {
+    background-color: #fff !important;
+    opacity: 1 !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+[class*='meta-item-container']:hover [class*='play-icon-layer'] [class*='play-icon'],
+[class*='meta-item']:hover [class*='play-icon-layer'] [class*='play-icon'],
+[class*='lib-item']:hover [class*='play-icon-layer'] [class*='play-icon'],
+[class*='meta-item-container']:focus-within [class*='play-icon-layer'] [class*='play-icon'],
+[class*='play-icon-layer']:hover [class*='play-icon'] {
+    color: #000 !important;
+}
+
+[class*='meta-item-container']:hover [class*='play-icon-outer'],
+[class*='meta-item']:hover [class*='play-icon-outer'],
+[class*='play-icon-layer']:hover [class*='play-icon-outer'] {
+    color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Niente anello bianco sul poster in hover (default Stremio) */
+[class*='meta-item-container']:hover [class*='poster-container'],
+[class*='meta-item']:hover [class*='poster-container'] {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* —— Pannello episodi / stream —— */
 [class*='metadetails-content'] {
     padding-right: 1rem !important;
     padding-bottom: 1rem !important;
@@ -135,13 +219,11 @@ html body {
     overflow: hidden !important;
     border: 0 !important;
     background: var(--velvet-panel) !important;
-    background-image: none !important;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4) !important;
-    -webkit-backdrop-filter: var(--velvet-blur) !important;
-    backdrop-filter: var(--velvet-blur) !important;
+    -webkit-backdrop-filter: var(--velvet-blur-strong) !important;
+    backdrop-filter: var(--velvet-blur-strong) !important;
 }
 
-/* Dentro il pannello: niente secondi container glass */
 [class*='videos-list'] [class*='search-bar'],
 [class*='streams-list'] [class*='search-bar'],
 [class*='videos-list'] [class*='seasons-bar'],
@@ -149,11 +231,8 @@ html body {
 [class*='videos-list'] [class*='dropdown'],
 [class*='streams-list'] [class*='dropdown'],
 [class*='videos-list'] [class*='multiselect'],
-[class*='streams-list'] [class*='multiselect'],
-[class*='videos-list'] [class*='modal-'],
-[class*='streams-list'] [class*='modal-'] {
+[class*='streams-list'] [class*='multiselect'] {
     background: transparent !important;
-    background-image: none !important;
     border: 0 !important;
     box-shadow: none !important;
     -webkit-backdrop-filter: none !important;
@@ -163,7 +242,6 @@ html body {
 [class*='videos-list']::after,
 [class*='streams-list']::after,
 [class*='modal-']::after,
-[class*='tooltip-container']::after,
 [class*='menu-layer']::after {
     content: none !important;
     display: none !important;
@@ -174,11 +252,5 @@ html body {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
         padding-bottom: calc(1rem + var(--safe-area-inset-bottom, 0rem)) !important;
-    }
-
-    [class*='metadetails-content'] > [class*='videos-list'],
-    [class*='metadetails-content'] > [class*='streams-list'] {
-        margin: 0.75rem 0 0 !important;
-        border-radius: 1.15rem !important;
     }
 }
