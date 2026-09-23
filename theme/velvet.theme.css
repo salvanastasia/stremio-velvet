@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.6
-@description Nero, sidebar dettaglio glass, secondary #1D1D1D.
+@version 2.7.7
+@description Nero, sidebar glass, seasons modal secondary.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Sidebar dettaglio glass; search bar border bianco 0.5.
- * @version 2.7.6
+ * @description Seasons modal secondary; sidebar glass.
+ * @version 2.7.7
  * @author Velvet
  */
 
