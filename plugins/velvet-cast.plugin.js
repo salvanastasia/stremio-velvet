@@ -2,7 +2,7 @@
  * @name Velvet Cast Cards
  * @description Avatar circolari del cast sulla film detail page (Stremio Enhanced).
  * @updateUrl https://raw.githubusercontent.com/salvanastasia/stremio-velvet/main/plugins/velvet-cast.plugin.js
- * @version 1.2.0
+ * @version 1.2.1
  * @author Velvet
  */
 
@@ -103,20 +103,15 @@
   overflow: hidden;
   margin: 0 auto 0.55rem;
   border: 1px solid rgba(255,255,255,0.28);
-  box-shadow:
-    0 10px 28px rgba(0,0,0,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.35);
+  box-shadow: none;
   background: #0a0a0c;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 180ms ease, border-color 180ms ease;
 }
 
 #${ROOT_ID} .velvet-cast-card:hover .velvet-cast-avatar {
   transform: translateY(-2px) scale(1.04);
   border-color: rgba(159,223,255,0.55);
-  box-shadow:
-    0 14px 32px rgba(0,0,0,0.5),
-    0 0 0 1px rgba(159,223,255,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.45);
+  box-shadow: none;
 }
 
 #${ROOT_ID} .velvet-cast-avatar img {
