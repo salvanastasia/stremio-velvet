@@ -1,16 +1,16 @@
 /* ==UserStyle==
 @name Velvet Liquid Glass
 @namespace velvet.stremio
-@version 2.7.0
-@description Nero, accent logo gradient, modali #1f1f1f.
+@version 2.7.1
+@description Nero, modali #1f1f1f, gradient solo su Aggiungi addon.
 @match https://web.stremio.com/*
 ==/UserStyle==
 */
 
 /**
  * @name Velvet Liquid Glass
- * @description Accent = gradient logo Stremio; modali #1f1f1f.
- * @version 2.7.0
+ * @description Modali #1f1f1f; gradient logo solo su install addon.
+ * @version 2.7.1
  * @author Velvet
  */
 
@@ -24,16 +24,15 @@
     --velvet-blur-strong: blur(48px) saturate(180%);
     --velvet-logo-from: #6a53d5;
     --velvet-logo-to: #244cbd;
-    --velvet-logo-mid: #4f50d1;
     --velvet-logo-gradient: linear-gradient(135deg, var(--velvet-logo-from) 0%, var(--velvet-logo-to) 100%);
     --primary-background-color: #000000;
     --secondary-background-color: #000000;
     --primary-foreground-color: rgba(255, 255, 255, 0.94);
     --secondary-foreground-color: #000000;
-    --primary-accent-color: var(--velvet-logo-mid);
-    --secondary-accent-color: var(--velvet-logo-mid);
+    --primary-accent-color: #9fdfff;
+    --secondary-accent-color: #7dffc8;
     --tertiary-accent-color: #ffe08a;
-    --quaternary-accent-color: var(--velvet-logo-from);
+    --quaternary-accent-color: #9fdfff;
     --overlay-color: rgba(255, 255, 255, 0.06);
     --modal-background-color: rgba(31, 31, 31, 0.92);
     --outer-glow: none;
@@ -63,7 +62,7 @@ html body {
 }
 
 ::selection {
-    background: rgba(106, 83, 213, 0.4);
+    background: rgba(159, 223, 255, 0.3);
     color: #fff;
 }
 
@@ -73,7 +72,7 @@ html body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(106, 83, 213, 0.55);
+    background-color: rgba(159, 223, 255, 0.45);
 }
 
 /* —— Modali / menu / dropdown: grigio search #1f1f1f + blur —— */
@@ -376,69 +375,23 @@ html body {
     display: none !important;
 }
 
-/* —— Accent logo: gradient viola→blu su CTA e controlli —— */
-[class*='install-button-container'],
-[class*='configure-button-container'],
-[class*='addon-button'],
-[class*='primary-button'],
-[class*='secondary-button'],
-[class*='action-button'],
-[class*='login-button'],
-[class*='signup-button'],
-[class*='submit-button'] {
+/* —— Solo “Aggiungi addon”: gradient logo —— */
+[class*='install-button-container'] {
     background: var(--velvet-logo-gradient) !important;
     background-color: transparent !important;
     border: 0 !important;
-    outline-color: var(--velvet-logo-mid) !important;
-    color: #fff !important;
+    outline-color: var(--velvet-logo-from) !important;
 }
 
-[class*='install-button-container']:hover,
-[class*='configure-button-container']:hover,
-[class*='addon-button']:hover,
-[class*='primary-button']:hover,
-[class*='secondary-button']:hover,
-[class*='action-button']:hover,
-[class*='login-button']:hover,
-[class*='signup-button']:hover,
-[class*='submit-button']:hover {
+[class*='install-button-container']:hover {
     background: transparent !important;
     background-color: transparent !important;
-    outline: 2px solid var(--velvet-logo-mid) !important;
-    color: #fff !important;
+    outline: 2px solid var(--velvet-logo-from) !important;
 }
 
 [class*='install-button-container'] [class*='label'],
-[class*='install-button-container'] [class*='icon'],
-[class*='configure-button-container'] [class*='label'],
-[class*='configure-button-container'] [class*='icon'],
-[class*='primary-button'] [class*='label'],
-[class*='secondary-button'] [class*='label'] {
+[class*='install-button-container'] [class*='icon'] {
     color: #fff !important;
-}
-
-/* Checkbox / radio / toggle / slider / progress */
-[class*='checkbox-container'].checked,
-[class*='checkbox-container'][class*='checked'],
-[class*='toggle-container'].checked,
-[class*='toggle-container'][class*='checked'],
-[class*='radio-button'].checked,
-[class*='radio-button'][class*='checked'],
-[class*='slider'] [class*='thumb'],
-[class*='range'] [class*='thumb'],
-[class*='progress-bar'] [class*='progress'],
-[class*='progress-bar-container'] [class*='progress'],
-[class*='watched'] [class*='progress'],
-[class*='continue-watching'] [class*='progress-bar'] {
-    background: var(--velvet-logo-gradient) !important;
-    background-color: var(--velvet-logo-mid) !important;
-    border-color: var(--velvet-logo-mid) !important;
-}
-
-[class*='checkbox-container'].checked [class*='icon'],
-[class*='toggle-container'].checked [class*='thumb'] {
-    color: #fff !important;
-    background-color: #fff !important;
 }
 
 @media only screen and (max-width: 840px) {
